@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: discounts-api
+  labels:
+    app: discounts-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: discounts-api
+  template:
+    metadata:
+      labels:
+        app: discounts-api
+    spec:
+      containers:
+      - name: discounts-api
+        image: {{ .Values.registry }}/{{ .Values.imagePrefix }}/discounts-api:{{ .Values.version }}
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: LOG_LEVEL
+          value: "{{ .Values.app.logLevel }}"
+        - name: APP_NAME
+          value: "{{ .Values.app.name }}"
+        - name: APP_ENV
+          value: "{{ .Values.app.env }}"
+        - name: GRPC_PORT
+          value: "{{ .Values.app.grpcPort }}"
+        - name: DB_DATABASE
+          value: "{{ .Values.app.dbName }}"
+        - name: DB_HOST
+          value: "{{ .Values.app.dbHost }}"
+        - name: DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials
+              key: password
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials
+              key: username
+        ports:
+          - name: grpc
+            containerPort: 5001
+        resources:
+          limits:
+            cpu: "1"
+            memory: 2048Mi
+          requests:
+            cpu: 100m
+            memory: 2048Mi
+        readinessProbe:
+          tcpSocket:
+            port: grpc
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: grpc
+          initialDelaySeconds: 5
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: discounts-grpc-api
+spec:
+  clusterIP: None
+  selector:
+    app: discounts-api
+  ports:
+    - name: grpc
+      port: 5001
+      containerPort: 5001
+      protocol: TCP
