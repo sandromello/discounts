@@ -35,22 +35,22 @@ spec:
           valueFrom:
             secretKeyRef:
               name: db-credentials
-              key: password
+              key: username
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
               name: db-credentials
-              key: username
+              key: password
         ports:
           - name: grpc
             containerPort: 5001
         resources:
           limits:
             cpu: "1"
-            memory: 2048Mi
+            memory: 512Mi
           requests:
             cpu: 100m
-            memory: 2048Mi
+            memory: 512Mi
         readinessProbe:
           tcpSocket:
             port: grpc
@@ -73,5 +73,5 @@ spec:
   ports:
     - name: grpc
       port: 5001
-      containerPort: 5001
+      targetPort: 5001
       protocol: TCP

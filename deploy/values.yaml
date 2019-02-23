@@ -1,5 +1,5 @@
 registry: "quay.io"
-image_prefix: "sandromello"
+imagePrefix: "sandromello"
 # The image version to deploy
 version: ""
 
